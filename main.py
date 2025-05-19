@@ -1,38 +1,34 @@
-
 import os
+import asyncio
 import discord
 from discord.ext import commands
-from utils.logger import setup_logger
+from dotenv import load_dotenv
 
+load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
-intents.messages = True
 intents.message_content = True
 
-logger = setup_logger()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    logger.info(f"{bot.user} está online e pronto!")
+    print(f"Bot conectado como {bot.user}")
+    bot.loop.create_task(keep_alive())
 
 @bot.command()
-async def status(ctx):
-    await ctx.send("✅ Bot está rodando normalmente.")
+async def ping(ctx):
+    await ctx.send("Pong!")
 
-@bot.command()
-async def log(ctx):
+async def keep_alive():
+    while True:
+        print("Bot ativo...")
+        await asyncio.sleep(300)  # 5 minutos
+
+if __name__ == "__main__":
     try:
-        with open("logs/bot.log", "r") as f:
-            content = f.readlines()[-10:]
-        await ctx.send("```" + "".join(content) + "```")
+        bot.run(TOKEN)
     except Exception as e:
-        await ctx.send(f"Erro ao ler o log: {e}")
-
-@bot.command()
-async def restart(ctx):
-    await ctx.send("♻️ Reiniciando bot...")
-    os.execv(sys.executable, ['python'] + sys.argv)
-
-bot.run(TOKEN)
+        import logging
+        logging.exception("Erro ao rodar o bot:")
