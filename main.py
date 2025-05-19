@@ -1,10 +1,12 @@
 import os
 import discord
 from discord.ext import commands
+import asyncio
+from aiohttp import web  # <- biblioteca leve para abrir uma porta
 
-intents = discord.Intents.default()
-intents.message_content = True  # Adiciona permissão para ler conteúdo das mensagens
+TOKEN = os.getenv("DISCORD_TOKEN")
 
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
@@ -15,5 +17,21 @@ async def on_ready():
 async def ping(ctx):
     await ctx.send("Pong!")
 
-TOKEN = os.getenv("DISCORD_TOKEN")
-bot.run(TOKEN)
+# Servidor web falso para manter porta aberta
+async def handle(request):
+    return web.Response(text="Bot online!")
+
+async def start_web_server():
+    app = web.Application()
+    app.router.add_get("/", handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", int(os.getenv("PORT", 8080)))
+    await site.start()
+
+async def main():
+    await start_web_server()
+    await bot.start(TOKEN)
+
+if __name__ == "__main__":
+    asyncio.run(main())
