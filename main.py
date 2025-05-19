@@ -1,37 +1,38 @@
+
 import os
 import discord
 from discord.ext import commands
-import asyncio
-from aiohttp import web  # <- biblioteca leve para abrir uma porta
+from utils.logger import setup_logger
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-intents = discord.Intents.all()
+intents = discord.Intents.default()
+intents.messages = True
+intents.message_content = True
+
+logger = setup_logger()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f'Bot conectado como {bot.user}')
+    logger.info(f"{bot.user} está online e pronto!")
 
 @bot.command()
-async def ping(ctx):
-    await ctx.send("Pong!")
+async def status(ctx):
+    await ctx.send("✅ Bot está rodando normalmente.")
 
-# Servidor web falso para manter porta aberta
-async def handle(request):
-    return web.Response(text="Bot online!")
+@bot.command()
+async def log(ctx):
+    try:
+        with open("logs/bot.log", "r") as f:
+            content = f.readlines()[-10:]
+        await ctx.send("```" + "".join(content) + "```")
+    except Exception as e:
+        await ctx.send(f"Erro ao ler o log: {e}")
 
-async def start_web_server():
-    app = web.Application()
-    app.router.add_get("/", handle)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", int(os.getenv("PORT", 8080)))
-    await site.start()
+@bot.command()
+async def restart(ctx):
+    await ctx.send("♻️ Reiniciando bot...")
+    os.execv(sys.executable, ['python'] + sys.argv)
 
-async def main():
-    await start_web_server()
-    await bot.start(TOKEN)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+bot.run(TOKEN)
