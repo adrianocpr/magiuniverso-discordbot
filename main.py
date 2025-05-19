@@ -1,4 +1,22 @@
-from bot.core import bot
-from bot.config import DISCORD_BOT_TOKEN
+import os
+import discord
+from discord.ext import commands
+from dotenv import load_dotenv
 
-bot.run(DISCORD_BOT_TOKEN)
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f"Bot conectado como {bot.user}")
+
+@bot.command()
+async def ping(ctx):
+    await ctx.send("Pong!")
+
+bot.run(TOKEN)
