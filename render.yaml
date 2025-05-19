@@ -5,5 +5,5 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python main.py"
     envVars:
-      - key: MTM3Mzk5NjM0MTUyNDY5NzEyMQ.GuYYKL.bLY34vspTLcZ7K2wbq8kF2NP7C1F02m0jrdKcI
+      - key: DISCORD_TOKEN
         sync: false
