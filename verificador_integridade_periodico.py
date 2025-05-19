@@ -1,16 +1,12 @@
 import os
 import hashlib
 import json
-import asyncio
 from pathlib import Path
 
-# === CONFIGURAÇÕES ===
 BASE_DIR = Path.cwd()
 HASHES_FILE = BASE_DIR / "integridade_hashes.json"
 EXTENSOES_MONITORADAS = [".py", ".json", ".env", ".txt", ".md"]
-INTERVALO_VERIFICACAO = 300  # 5 minutos
 
-# === FUNÇÕES DE HASH E INTEGRIDADE ===
 def gerar_hash_arquivo(filepath):
     sha256_hash = hashlib.sha256()
     try:
@@ -61,22 +57,11 @@ def verificar_integridade():
 
     return arquivos_alerta
 
-# === EXECUÇÃO PERIÓDICA ===
-async def periodic_integrity_check(interval=INTERVALO_VERIFICACAO):
-    while True:
-        print("\n🔍 Verificação de integridade em andamento...")
-        alertas = verificar_integridade()
-        if alertas:
-            print("⚠️ Alterações detectadas:")
-            for alerta in alertas:
-                print(f"- {alerta}")
-        else:
-            print("✅ Todos os arquivos estão íntegros.")
-        await asyncio.sleep(interval)
-
-# === INÍCIO DO PROGRAMA ===
 if __name__ == "__main__":
-    try:
-        asyncio.run(periodic_integrity_check())
-    except KeyboardInterrupt:
-        print("⛔ Verificador interrompido.")
+    alertas = verificar_integridade()
+    if alertas:
+        print("Alertas de integridade:")
+        for alerta in alertas:
+            print(f"- {alerta}")
+    else:
+        print("Todos os arquivos estão íntegros.")
